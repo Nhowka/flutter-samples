@@ -12,7 +12,7 @@ import '../../../domain/models/itinerary_config/itinerary_config.dart';
 import '../../../utils/loadable.dart';
 import '../../../utils/result.dart' as rs;
 
-part 'search_form_mvu.freezed.dart';
+part 'search_form.freezed.dart';
 
 @freezed
 class SearchFormModel with _$SearchFormModel {
@@ -20,29 +20,15 @@ class SearchFormModel with _$SearchFormModel {
 
   const factory SearchFormModel({
     @Default(LoadableValue.loading()) LoadableValue<List<Continent>> continents,
-    @Default(LoadableValue.loading()) LoadableValue<String?> selectedContinent,
-    @Default(LoadableValue.loading()) LoadableValue<DateTimeRange?> dateRange,
-    @Default(LoadableValue.loading()) LoadableValue<int> guests,
+    String? selectedContinent,
+    DateTimeRange? dateRange,
+    @Default(0) int guests,
     @Default(false) bool updatingItinerary,
+    @Default(true) bool loadingItinerary,
   }) = _SearchFormModel;
 
-  bool get valid => switch (this) {
-    SearchFormModel(guests: LoadedValue(value: final guests)) =>
-      guests > 0 && selectedContinent.hasValue && dateRange.hasValue,
-    _ => false,
-  };
-
-  bool get isLoading =>
-      continents.isLoading ||
-      selectedContinent.isLoading ||
-      dateRange.isLoading ||
-      guests.isLoading;
-
-  bool get hasError =>
-      continents.hasError ||
-      selectedContinent.hasError ||
-      dateRange.hasError ||
-      guests.hasError;
+  bool get valid =>
+      guests > 0 && selectedContinent != null && dateRange != null;
 }
 
 @freezed
@@ -68,8 +54,7 @@ sealed class SearchFormMessages with _$SearchFormMessages {
   const factory SearchFormMessages.updateItinerary({
     required void Function() onSuccess,
     required void Function(Exception error) onFailure,
-  }
-  ) = _UpdateItinerary;
+  }) = _UpdateItinerary;
 
   const factory SearchFormMessages.successUpdateItinerary(
     void Function() handler,
@@ -93,6 +78,19 @@ class SearchFormProcessor
   }) : _continentRepository = continentRepository,
        _itineraryConfigRepository = itineraryConfigRepository;
 
+  /// Helper sets for testing
+  set selectedContinent(String? continent) {
+    dispatch(SearchFormMessages.setSelectedContinent(continent));
+  }
+
+  set guests(int quantity) {
+    dispatch(SearchFormMessages.setGuests(quantity));
+  }
+
+  set dateRange(DateTimeRange? dateRange) {
+    dispatch(SearchFormMessages.setDateRange(dateRange));
+  }
+
   @override
   (SearchFormModel, Cmd<SearchFormMessages>) init() => (
     SearchFormModel(),
@@ -103,43 +101,40 @@ class SearchFormProcessor
   (SearchFormModel, Cmd<SearchFormMessages>) update(
     SearchFormMessages msg,
     SearchFormModel model,
-  ) => switch (msg) {
+  ) {
+    _log.info(msg);
+    return switch (msg) {
     _SetDateRange(:final dateRange) => (
-      model.copyWith(dateRange: LoadableValue.loaded(dateRange)),
+      model.copyWith(dateRange: dateRange),
       Cmd.none(),
     ),
     _SetSelectedContinent(:final continent) => (
-      model.copyWith(selectedContinent: LoadableValue.loaded(continent)),
+      model.copyWith(selectedContinent: continent),
       Cmd.none(),
     ),
     _SetGuests(:final quantity) => (
-      model.copyWith(guests: LoadableValue.loaded(max(quantity, 0))),
+      model.copyWith(guests: max(quantity, 0)),
       Cmd.none(),
     ),
     _LoadItineraryConfig(:final config) => switch (config) {
       rs.Ok<ItineraryConfig>(:final value) => (
         model.copyWith(
-          selectedContinent: LoadableValue.loaded(value.continent),
-          guests: LoadableValue.loaded(value.guests ?? 0),
+          loadingItinerary: false,
+          selectedContinent: value.continent,
+          guests: value.guests ?? 0,
           dateRange: switch (value) {
             ItineraryConfig(
               :final DateTime startDate,
               :final DateTime endDate,
             ) =>
-              LoadableValue.loaded(
-                DateTimeRange(start: startDate, end: endDate),
-              ),
-            _ => LoadableValue.loaded(null),
+              DateTimeRange(start: startDate, end: endDate),
+            _ => null,
           },
         ),
         Cmd.none(),
       ),
-      rs.Error<ItineraryConfig>(:final error) => (
-        model.copyWith(
-          selectedContinent: LoadableValue.error(error),
-          guests: LoadableValue.error(error),
-          dateRange: LoadableValue.error(error),
-        ),
+      rs.Error<ItineraryConfig>() => (
+        model.copyWith(loadingItinerary: false),
         Cmd.none(),
       ),
     },
@@ -151,11 +146,9 @@ class SearchFormProcessor
       model.copyWith(updatingItinerary: true),
       Cmd.ofEffect((dispatch) async {
         if (model case SearchFormModel(
-          selectedContinent: LoadedValue(value: final selectedContinent),
-          dateRange: LoadedValue(
-            value: DateTimeRange(:final start, :final end),
-          ),
-          guests: LoadedValue(value: final guests),
+          :final selectedContinent,
+          dateRange: DateTimeRange(:final start, :final end),
+          :final guests,
         )) {
           final result = await _itineraryConfigRepository.setItineraryConfig(
             ItineraryConfig(
@@ -199,14 +192,15 @@ class SearchFormProcessor
       SearchFormModel(),
       Cmd.batch([
         Cmd.ofFunc(
-          _continentRepository.getContinents,
-          onSuccess: SearchFormMessages.loadContinents,
-        ),
-        Cmd.ofFunc(
           _itineraryConfigRepository.getItineraryConfig,
           onSuccess: SearchFormMessages.loadItineraryConfig,
+        ),
+        Cmd.ofFunc(
+          _continentRepository.getContinents,
+          onSuccess: SearchFormMessages.loadContinents,
         ),
       ]),
     ),
   };
+  }
 }

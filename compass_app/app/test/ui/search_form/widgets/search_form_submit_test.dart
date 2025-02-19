@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:compass_app/ui/search_form/view_models/search_form_viewmodel.dart';
+import 'package:compass_app/ui/search_form/mvu/search_form.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_submit.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -15,21 +15,27 @@ import '../../../../testing/mocks.dart';
 
 void main() {
   group('SearchFormSubmit widget tests', () {
-    late SearchFormViewModel viewModel;
+    late SearchFormProcessor processor;
     late MockGoRouter goRouter;
 
     setUp(() {
-      viewModel = SearchFormViewModel(
+      processor = SearchFormProcessor(
         continentRepository: FakeContinentRepository(),
         itineraryConfigRepository: FakeItineraryConfigRepository(),
       );
       goRouter = MockGoRouter();
     });
 
+    Future<void> settleModel(WidgetTester tester) async {
+      await tester.runAsync(() => processor.useModel((model, _) => true));
+      await tester.pumpAndSettle();
+    }
+
     loadWidget(WidgetTester tester) async {
+      await settleModel(tester);
       await testApp(
         tester,
-        SearchFormSubmit(viewModel: viewModel),
+        SearchFormSubmit(processor: processor),
         goRouter: goRouter,
       );
     }
@@ -43,15 +49,14 @@ void main() {
       verifyNever(() => goRouter.go(any()));
 
       // Fill in data
-      viewModel.guests = 2;
-      viewModel.selectedContinent = 'CONTINENT';
+      processor.guests = 2;
+      processor.selectedContinent = 'CONTINENT';
       final newDateRange = DateTimeRange(
         start: DateTime(2024, 1, 1),
         end: DateTime(2024, 1, 31),
       );
-      viewModel.dateRange = newDateRange;
-      await tester.pumpAndSettle();
-
+      processor.dateRange = newDateRange;
+      await settleModel(tester);
       // Perform search
       await tester.tap(find.byKey(const ValueKey(searchFormSubmitButtonKey)));
 

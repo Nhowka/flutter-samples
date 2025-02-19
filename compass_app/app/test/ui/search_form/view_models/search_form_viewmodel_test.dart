@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:compass_app/ui/search_form/view_models/search_form_viewmodel.dart';
+import 'dart:async';
+
+import 'package:compass_app/ui/search_form/mvu/search_form.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -11,63 +13,73 @@ import '../../../../testing/fakes/repositories/fake_itinerary_config_repository.
 
 void main() {
   group('SearchFormViewModel Tests', () {
-    late SearchFormViewModel viewModel;
+    late SearchFormProcessor processor;
 
     setUp(() {
-      viewModel = SearchFormViewModel(
+      processor = SearchFormProcessor(
         continentRepository: FakeContinentRepository(),
         itineraryConfigRepository: FakeItineraryConfigRepository(),
       );
     });
 
-    test('Initial values are correct', () {
-      expect(viewModel.valid, false);
-      expect(viewModel.selectedContinent, null);
-      expect(viewModel.dateRange, null);
-      expect(viewModel.guests, 0);
+    test('Initial values are correct', () async {
+      final model = await processor.useModel((m, _) => m);
+      expect(model.valid, false);
+      expect(model.selectedContinent, null);
+      expect(model.dateRange, null);
+      expect(model.guests, 0);
     });
 
-    test('Setting dateRange updates correctly', () {
+    test('Setting dateRange updates correctly', () async {
       final newDateRange = DateTimeRange(
         start: DateTime(2024, 1, 1),
         end: DateTime(2024, 1, 31),
       );
-      viewModel.dateRange = newDateRange;
-      expect(viewModel.dateRange, newDateRange);
+      processor.dispatch(SearchFormMessages.setDateRange(newDateRange));
+      await processor.useModel((model, _) => expect(model.dateRange, newDateRange));
     });
 
-    test('Setting selectedContinent updates correctly', () {
-      viewModel.selectedContinent = 'CONTINENT';
-      expect(viewModel.selectedContinent, 'CONTINENT');
+    test('Setting selectedContinent updates correctly', () async {
+      processor.selectedContinent = 'CONTINENT';
+      await processor.useModel(
+        (model, _) => expect(model.selectedContinent, 'CONTINENT'),
+      );
 
       // Setting null should work
-      viewModel.selectedContinent = null;
-      expect(viewModel.selectedContinent, null);
+      processor.selectedContinent = null;
+      await processor.useModel((model, _) => expect(model.selectedContinent, null));
     });
 
-    test('Setting guests updates correctly', () {
-      viewModel.guests = 2;
-      expect(viewModel.guests, 2);
+    test('Setting guests updates correctly', () async {
+      processor.guests = 2;
+      await processor.useModel((model, _) => expect(model.guests, 2));
 
       // Guests number should not be negative
-      viewModel.guests = -1;
-      expect(viewModel.guests, 0);
+      processor.guests = -1;
+      await processor.useModel((model, _) => expect(model.guests, 0));
     });
 
     test('Set all values and save', () async {
-      expect(viewModel.valid, false);
+      await processor.useModel((model, _) => expect(model.valid, false));
 
-      viewModel.guests = 2;
-      viewModel.selectedContinent = 'CONTINENT';
+      processor.guests = 2;
+      processor.selectedContinent = 'CONTINENT';
       final newDateRange = DateTimeRange(
         start: DateTime(2024, 1, 1),
         end: DateTime(2024, 1, 31),
       );
-      viewModel.dateRange = newDateRange;
+      processor.dateRange = newDateRange;
 
-      expect(viewModel.valid, true);
-      await viewModel.updateItineraryConfig.execute();
-      expect(viewModel.updateItineraryConfig.completed, true);
+      await processor.useModel((model, _) => expect(model.valid, true));
+      final success = Completer<bool>();
+      processor.dispatch(
+        SearchFormMessages.updateItinerary(
+          onSuccess: () => success.complete(true),
+          onFailure: (_) => success.complete(false),
+        ),
+      );
+
+      expect(await success.future, true);
     });
   });
 }

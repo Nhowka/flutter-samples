@@ -17,9 +17,7 @@ import '../ui/home/view_models/home_viewmodel.dart';
 import '../ui/home/widgets/home_screen.dart';
 import '../ui/results/view_models/results_viewmodel.dart';
 import '../ui/results/widgets/results_screen.dart';
-import '../ui/search_form/mvu/search_form_mvu.dart';
-import '../ui/search_form/mvu/search_form_screen_mvu.dart';
-import '../ui/search_form/view_models/search_form_viewmodel.dart';
+import '../ui/search_form/mvu/search_form.dart';
 import '../ui/search_form/widgets/search_form_screen.dart';
 import 'routes.dart';
 
@@ -59,7 +57,7 @@ GoRouter router(AuthRepository authRepository) => GoRouter(
               continentRepository: context.read(),
               itineraryConfigRepository: context.read(),
             );
-            return SearchFormScreenMVU(processor: processor);
+            return SearchFormScreen(processor: processor);
             //return SearchFormScreen(viewModel: viewModel);
           },
         ),

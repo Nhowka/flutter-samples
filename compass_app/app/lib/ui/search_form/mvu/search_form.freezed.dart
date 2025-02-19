@@ -3,7 +3,7 @@
 // ignore_for_file: type=lint
 // ignore_for_file: unused_element, deprecated_member_use, deprecated_member_use_from_same_package, use_function_type_syntax_for_parameters, unnecessary_const, avoid_init_to_null, invalid_override_different_default_values_named, prefer_expression_function_bodies, annotate_overrides, invalid_annotation_target, unnecessary_question_mark
 
-part of 'search_form_mvu.dart';
+part of 'search_form.dart';
 
 // **************************************************************************
 // FreezedGenerator
@@ -19,12 +19,11 @@ final _privateConstructorUsedError = UnsupportedError(
 mixin _$SearchFormModel {
   LoadableValue<List<Continent>> get continents =>
       throw _privateConstructorUsedError;
-  LoadableValue<String?> get selectedContinent =>
-      throw _privateConstructorUsedError;
-  LoadableValue<DateTimeRange?> get dateRange =>
-      throw _privateConstructorUsedError;
-  LoadableValue<int> get guests => throw _privateConstructorUsedError;
+  String? get selectedContinent => throw _privateConstructorUsedError;
+  DateTimeRange? get dateRange => throw _privateConstructorUsedError;
+  int get guests => throw _privateConstructorUsedError;
   bool get updatingItinerary => throw _privateConstructorUsedError;
+  bool get loadingItinerary => throw _privateConstructorUsedError;
 
   /// Create a copy of SearchFormModel
   /// with the given fields replaced by the non-null parameter values.
@@ -42,10 +41,11 @@ abstract class $SearchFormModelCopyWith<$Res> {
   @useResult
   $Res call({
     LoadableValue<List<Continent>> continents,
-    LoadableValue<String?> selectedContinent,
-    LoadableValue<DateTimeRange?> dateRange,
-    LoadableValue<int> guests,
+    String? selectedContinent,
+    DateTimeRange? dateRange,
+    int guests,
     bool updatingItinerary,
+    bool loadingItinerary,
   });
 }
 
@@ -65,10 +65,11 @@ class _$SearchFormModelCopyWithImpl<$Res, $Val extends SearchFormModel>
   @override
   $Res call({
     Object? continents = null,
-    Object? selectedContinent = null,
-    Object? dateRange = null,
+    Object? selectedContinent = freezed,
+    Object? dateRange = freezed,
     Object? guests = null,
     Object? updatingItinerary = null,
+    Object? loadingItinerary = null,
   }) {
     return _then(
       _value.copyWith(
@@ -78,24 +79,29 @@ class _$SearchFormModelCopyWithImpl<$Res, $Val extends SearchFormModel>
                     : continents // ignore: cast_nullable_to_non_nullable
                         as LoadableValue<List<Continent>>,
             selectedContinent:
-                null == selectedContinent
+                freezed == selectedContinent
                     ? _value.selectedContinent
                     : selectedContinent // ignore: cast_nullable_to_non_nullable
-                        as LoadableValue<String?>,
+                        as String?,
             dateRange:
-                null == dateRange
+                freezed == dateRange
                     ? _value.dateRange
                     : dateRange // ignore: cast_nullable_to_non_nullable
-                        as LoadableValue<DateTimeRange?>,
+                        as DateTimeRange?,
             guests:
                 null == guests
                     ? _value.guests
                     : guests // ignore: cast_nullable_to_non_nullable
-                        as LoadableValue<int>,
+                        as int,
             updatingItinerary:
                 null == updatingItinerary
                     ? _value.updatingItinerary
                     : updatingItinerary // ignore: cast_nullable_to_non_nullable
+                        as bool,
+            loadingItinerary:
+                null == loadingItinerary
+                    ? _value.loadingItinerary
+                    : loadingItinerary // ignore: cast_nullable_to_non_nullable
                         as bool,
           )
           as $Val,
@@ -114,10 +120,11 @@ abstract class _$$SearchFormModelImplCopyWith<$Res>
   @useResult
   $Res call({
     LoadableValue<List<Continent>> continents,
-    LoadableValue<String?> selectedContinent,
-    LoadableValue<DateTimeRange?> dateRange,
-    LoadableValue<int> guests,
+    String? selectedContinent,
+    DateTimeRange? dateRange,
+    int guests,
     bool updatingItinerary,
+    bool loadingItinerary,
   });
 }
 
@@ -136,10 +143,11 @@ class __$$SearchFormModelImplCopyWithImpl<$Res>
   @override
   $Res call({
     Object? continents = null,
-    Object? selectedContinent = null,
-    Object? dateRange = null,
+    Object? selectedContinent = freezed,
+    Object? dateRange = freezed,
     Object? guests = null,
     Object? updatingItinerary = null,
+    Object? loadingItinerary = null,
   }) {
     return _then(
       _$SearchFormModelImpl(
@@ -149,24 +157,29 @@ class __$$SearchFormModelImplCopyWithImpl<$Res>
                 : continents // ignore: cast_nullable_to_non_nullable
                     as LoadableValue<List<Continent>>,
         selectedContinent:
-            null == selectedContinent
+            freezed == selectedContinent
                 ? _value.selectedContinent
                 : selectedContinent // ignore: cast_nullable_to_non_nullable
-                    as LoadableValue<String?>,
+                    as String?,
         dateRange:
-            null == dateRange
+            freezed == dateRange
                 ? _value.dateRange
                 : dateRange // ignore: cast_nullable_to_non_nullable
-                    as LoadableValue<DateTimeRange?>,
+                    as DateTimeRange?,
         guests:
             null == guests
                 ? _value.guests
                 : guests // ignore: cast_nullable_to_non_nullable
-                    as LoadableValue<int>,
+                    as int,
         updatingItinerary:
             null == updatingItinerary
                 ? _value.updatingItinerary
                 : updatingItinerary // ignore: cast_nullable_to_non_nullable
+                    as bool,
+        loadingItinerary:
+            null == loadingItinerary
+                ? _value.loadingItinerary
+                : loadingItinerary // ignore: cast_nullable_to_non_nullable
                     as bool,
       ),
     );
@@ -178,31 +191,33 @@ class __$$SearchFormModelImplCopyWithImpl<$Res>
 class _$SearchFormModelImpl extends _SearchFormModel {
   const _$SearchFormModelImpl({
     this.continents = const LoadableValue.loading(),
-    this.selectedContinent = const LoadableValue.loading(),
-    this.dateRange = const LoadableValue.loading(),
-    this.guests = const LoadableValue.loading(),
+    this.selectedContinent,
+    this.dateRange,
+    this.guests = 0,
     this.updatingItinerary = false,
+    this.loadingItinerary = true,
   }) : super._();
 
   @override
   @JsonKey()
   final LoadableValue<List<Continent>> continents;
   @override
-  @JsonKey()
-  final LoadableValue<String?> selectedContinent;
+  final String? selectedContinent;
+  @override
+  final DateTimeRange? dateRange;
   @override
   @JsonKey()
-  final LoadableValue<DateTimeRange?> dateRange;
-  @override
-  @JsonKey()
-  final LoadableValue<int> guests;
+  final int guests;
   @override
   @JsonKey()
   final bool updatingItinerary;
+  @override
+  @JsonKey()
+  final bool loadingItinerary;
 
   @override
   String toString() {
-    return 'SearchFormModel(continents: $continents, selectedContinent: $selectedContinent, dateRange: $dateRange, guests: $guests, updatingItinerary: $updatingItinerary)';
+    return 'SearchFormModel(continents: $continents, selectedContinent: $selectedContinent, dateRange: $dateRange, guests: $guests, updatingItinerary: $updatingItinerary, loadingItinerary: $loadingItinerary)';
   }
 
   @override
@@ -218,7 +233,9 @@ class _$SearchFormModelImpl extends _SearchFormModel {
                 other.dateRange == dateRange) &&
             (identical(other.guests, guests) || other.guests == guests) &&
             (identical(other.updatingItinerary, updatingItinerary) ||
-                other.updatingItinerary == updatingItinerary));
+                other.updatingItinerary == updatingItinerary) &&
+            (identical(other.loadingItinerary, loadingItinerary) ||
+                other.loadingItinerary == loadingItinerary));
   }
 
   @override
@@ -229,6 +246,7 @@ class _$SearchFormModelImpl extends _SearchFormModel {
     dateRange,
     guests,
     updatingItinerary,
+    loadingItinerary,
   );
 
   /// Create a copy of SearchFormModel
@@ -246,23 +264,26 @@ class _$SearchFormModelImpl extends _SearchFormModel {
 abstract class _SearchFormModel extends SearchFormModel {
   const factory _SearchFormModel({
     final LoadableValue<List<Continent>> continents,
-    final LoadableValue<String?> selectedContinent,
-    final LoadableValue<DateTimeRange?> dateRange,
-    final LoadableValue<int> guests,
+    final String? selectedContinent,
+    final DateTimeRange? dateRange,
+    final int guests,
     final bool updatingItinerary,
+    final bool loadingItinerary,
   }) = _$SearchFormModelImpl;
   const _SearchFormModel._() : super._();
 
   @override
   LoadableValue<List<Continent>> get continents;
   @override
-  LoadableValue<String?> get selectedContinent;
+  String? get selectedContinent;
   @override
-  LoadableValue<DateTimeRange?> get dateRange;
+  DateTimeRange? get dateRange;
   @override
-  LoadableValue<int> get guests;
+  int get guests;
   @override
   bool get updatingItinerary;
+  @override
+  bool get loadingItinerary;
 
   /// Create a copy of SearchFormModel
   /// with the given fields replaced by the non-null parameter values.

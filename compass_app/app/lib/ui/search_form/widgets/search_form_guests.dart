@@ -3,10 +3,11 @@
 // found in the LICENSE file.
 
 import 'package:flutter/material.dart';
+import 'package:mvu_layer/mvu.dart';
 
 import '../../core/themes/colors.dart';
 import '../../core/themes/dimens.dart';
-import '../view_models/search_form_viewmodel.dart';
+import '../mvu/search_form.dart';
 
 const String removeGuestsKey = 'remove-guests';
 const String addGuestsKey = 'add-guests';
@@ -16,9 +17,9 @@ const String addGuestsKey = 'add-guests';
 /// Users can tap the Plus and Minus icons to increase or decrease
 /// the number of guests.
 class SearchFormGuests extends StatelessWidget {
-  const SearchFormGuests({super.key, required this.viewModel});
+  const SearchFormGuests({super.key, required this.processor});
 
-  final SearchFormViewModel viewModel;
+  final SearchFormProcessor processor;
 
   @override
   Widget build(BuildContext context) {
@@ -42,7 +43,7 @@ class SearchFormGuests extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text('Who', style: Theme.of(context).textTheme.titleMedium),
-              _QuantitySelector(viewModel),
+              _QuantitySelector(processor),
             ],
           ),
         ),
@@ -52,47 +53,52 @@ class SearchFormGuests extends StatelessWidget {
 }
 
 class _QuantitySelector extends StatelessWidget {
-  const _QuantitySelector(this.viewModel);
+  const _QuantitySelector(this.processor);
 
-  final SearchFormViewModel viewModel;
+  final SearchFormProcessor processor;
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 90,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          InkWell(
-            key: const ValueKey(removeGuestsKey),
-            onTap: () {
-              viewModel.guests--;
-            },
-            child: const Icon(
-              Icons.remove_circle_outline,
-              color: AppColors.grey3,
-            ),
-          ),
-          ListenableBuilder(
-            listenable: viewModel,
-            builder:
-                (context, _) => Text(
-                  viewModel.guests.toString(),
-                  style:
-                      viewModel.guests == 0
-                          ? Theme.of(context).inputDecorationTheme.hintStyle
-                          : Theme.of(context).textTheme.bodyMedium,
+    return MVUBuilder.ofProcessor(
+      processor: processor,
+      view: (context, model, dispatch) {
+        return SizedBox(
+          width: 90,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              InkWell(
+                key: const ValueKey(removeGuestsKey),
+                onTap: () {
+                  dispatch(SearchFormMessages.setGuests(model.guests - 1));
+                },
+                child: const Icon(
+                  Icons.remove_circle_outline,
+                  color: AppColors.grey3,
                 ),
+              ),
+              Text(
+                model.guests.toString(),
+                style:
+                model.guests == 0
+                    ? Theme.of(context).inputDecorationTheme.hintStyle
+                    : Theme.of(context).textTheme.bodyMedium,
+              ),
+
+              InkWell(
+                key: const ValueKey(addGuestsKey),
+                onTap: () {
+                  dispatch(SearchFormMessages.setGuests(model.guests + 1));
+                },
+                child: const Icon(
+                  Icons.add_circle_outline,
+                  color: AppColors.grey3,
+                ),
+              ),
+            ],
           ),
-          InkWell(
-            key: const ValueKey(addGuestsKey),
-            onTap: () {
-              viewModel.guests++;
-            },
-            child: const Icon(Icons.add_circle_outline, color: AppColors.grey3),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

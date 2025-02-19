@@ -4,7 +4,7 @@
 
 import 'package:compass_app/data/repositories/auth/auth_repository.dart';
 import 'package:compass_app/data/repositories/itinerary_config/itinerary_config_repository.dart';
-import 'package:compass_app/ui/search_form/view_models/search_form_viewmodel.dart';
+import 'package:compass_app/ui/search_form/mvu/search_form.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_guests.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_screen.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_submit.dart';
@@ -21,25 +21,30 @@ import '../../../../testing/mocks.dart';
 
 void main() {
   group('SearchFormScreen widget tests', () {
-    late SearchFormViewModel viewModel;
+    late SearchFormProcessor processor;
     late MockGoRouter goRouter;
 
     setUp(() {
-      viewModel = SearchFormViewModel(
+      processor = SearchFormProcessor(
         continentRepository: FakeContinentRepository(),
         itineraryConfigRepository: FakeItineraryConfigRepository(),
       );
       goRouter = MockGoRouter();
     });
 
+    Future<void> settleModel(WidgetTester tester) async {
+      await tester.runAsync(() => processor.useModel((model, _) => true));
+    }
+
     loadWidget(WidgetTester tester) async {
+      await settleModel(tester);
       await testApp(
         tester,
         ChangeNotifierProvider.value(
           value: FakeAuthRepository() as AuthRepository,
           child: Provider.value(
             value: FakeItineraryConfigRepository() as ItineraryConfigRepository,
-            child: SearchFormScreen(viewModel: viewModel),
+            child: SearchFormScreen(processor: processor),
           ),
         ),
         goRouter: goRouter,
@@ -56,14 +61,14 @@ void main() {
       await tester.tap(find.text('CONTINENT'), warnIfMissed: false);
 
       // Select date
-      viewModel.dateRange = DateTimeRange(
+      processor.dateRange = DateTimeRange(
         start: DateTime(2024, 6, 12),
         end: DateTime(2024, 7, 23),
       );
 
       // Select guests
       await tester.tap(find.byKey(const ValueKey(addGuestsKey)));
-
+      await settleModel(tester);
       // Refresh screen state
       await tester.pumpAndSettle();
 

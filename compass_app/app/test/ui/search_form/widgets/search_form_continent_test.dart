@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:compass_app/ui/search_form/view_models/search_form_viewmodel.dart';
+import 'package:compass_app/ui/search_form/mvu/search_form.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_continent.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -12,17 +12,19 @@ import '../../../../testing/fakes/repositories/fake_itinerary_config_repository.
 
 void main() {
   group('SearchFormContinent widget tests', () {
-    late SearchFormViewModel viewModel;
+    late SearchFormProcessor processor;
 
     setUp(() {
-      viewModel = SearchFormViewModel(
+      processor = SearchFormProcessor(
         continentRepository: FakeContinentRepository(),
         itineraryConfigRepository: FakeItineraryConfigRepository(),
       );
     });
 
     loadWidget(WidgetTester tester) async {
-      await testApp(tester, SearchFormContinent(viewModel: viewModel));
+      // Settle model
+      await tester.runAsync(() => processor.useModel((model, _) => true));
+      await testApp(tester, SearchFormContinent(processor: processor));
     }
 
     testWidgets('Should load and select continent', (
@@ -34,7 +36,7 @@ void main() {
       // Select continent
       await tester.tap(find.text('CONTINENT'), warnIfMissed: false);
 
-      expect(viewModel.selectedContinent, 'CONTINENT');
+      await processor.useModel((model, _) => expect(model.selectedContinent, 'CONTINENT'));
     });
   });
 }

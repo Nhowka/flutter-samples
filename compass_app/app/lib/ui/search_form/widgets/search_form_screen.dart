@@ -5,11 +5,10 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../routing/routes.dart';
+import '../../../../routing/routes.dart';
 import '../../core/themes/dimens.dart';
 import '../../core/ui/search_bar.dart';
-import '../../results/widgets/results_screen.dart';
-import '../view_models/search_form_viewmodel.dart';
+import '../mvu/search_form.dart';
 import 'search_form_continent.dart';
 import 'search_form_date.dart';
 import 'search_form_guests.dart';
@@ -21,9 +20,9 @@ import 'search_form_submit.dart';
 /// Tapping on the submit button opens the [ResultsScreen] screen
 /// passing the search options as query parameters.
 class SearchFormScreen extends StatelessWidget {
-  const SearchFormScreen({super.key, required this.viewModel});
+  const SearchFormScreen({super.key, required this.processor});
 
-  final SearchFormViewModel viewModel;
+  final SearchFormProcessor processor;
 
   @override
   Widget build(BuildContext context) {
@@ -49,11 +48,11 @@ class SearchFormScreen extends StatelessWidget {
                 child: const AppSearchBar(),
               ),
             ),
-            SearchFormContinent(viewModel: viewModel),
-            SearchFormDate(viewModel: viewModel),
-            SearchFormGuests(viewModel: viewModel),
+            SearchFormContinent(processor: processor),
+            SearchFormDate(processor: processor),
+            SearchFormGuests(processor: processor),
             const Spacer(),
-            SearchFormSubmit(viewModel: viewModel),
+            SearchFormSubmit(processor: processor),
           ],
         ),
       ),

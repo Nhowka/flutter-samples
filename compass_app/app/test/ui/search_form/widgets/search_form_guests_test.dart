@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:compass_app/ui/search_form/view_models/search_form_viewmodel.dart';
+import 'package:compass_app/ui/search_form/mvu/search_form.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_guests.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,17 +13,22 @@ import '../../../../testing/fakes/repositories/fake_itinerary_config_repository.
 
 void main() {
   group('SearchFormGuests widget tests', () {
-    late SearchFormViewModel viewModel;
+    late SearchFormProcessor processor;
 
     setUp(() {
-      viewModel = SearchFormViewModel(
+      processor = SearchFormProcessor(
         continentRepository: FakeContinentRepository(),
         itineraryConfigRepository: FakeItineraryConfigRepository(),
       );
     });
 
+    Future<void> settleModel(WidgetTester tester) async {
+      await tester.runAsync(() => processor.useModel((model, _) => true));
+    }
+
     loadWidget(WidgetTester tester) async {
-      await testApp(tester, SearchFormGuests(viewModel: viewModel));
+      await settleModel(tester);
+      await testApp(tester, SearchFormGuests(processor: processor));
     }
 
     testWidgets('Increase number of guests', (WidgetTester tester) async {
@@ -34,7 +39,8 @@ void main() {
       expect(find.text('0'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey(addGuestsKey)));
-      await tester.pumpAndSettle();
+      await settleModel(tester);
+      await tester.pumpAndSettle(Duration(seconds: 1));
 
       expect(find.text('1'), findsOneWidget);
     });
@@ -47,18 +53,21 @@ void main() {
       expect(find.text('0'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey(removeGuestsKey)));
+      await settleModel(tester);
       await tester.pumpAndSettle();
 
       // Should remain at 0
       expect(find.text('0'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey(addGuestsKey)));
+      await settleModel(tester);
       await tester.pumpAndSettle();
 
       // Increase to 1
       expect(find.text('1'), findsOneWidget);
 
       await tester.tap(find.byKey(const ValueKey(removeGuestsKey)));
+      await settleModel(tester);
       await tester.pumpAndSettle();
 
       // Back to 0

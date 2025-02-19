@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-import 'package:compass_app/ui/search_form/view_models/search_form_viewmodel.dart';
+import 'package:compass_app/ui/search_form/mvu/search_form.dart';
 import 'package:compass_app/ui/search_form/widgets/search_form_date.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -13,17 +13,18 @@ import '../../../../testing/fakes/repositories/fake_itinerary_config_repository.
 
 void main() {
   group('SearchFormDate widget tests', () {
-    late SearchFormViewModel viewModel;
+    late SearchFormProcessor processor;
 
     setUp(() {
-      viewModel = SearchFormViewModel(
+      processor = SearchFormProcessor(
         continentRepository: FakeContinentRepository(),
         itineraryConfigRepository: FakeItineraryConfigRepository(),
       );
     });
 
     loadWidget(WidgetTester tester) async {
-      await testApp(tester, SearchFormDate(viewModel: viewModel));
+      await tester.runAsync(() => processor.useModel((model, _) => true));
+      await testApp(tester, SearchFormDate(processor: processor));
     }
 
     testWidgets('should display date in different month', (
@@ -36,9 +37,12 @@ void main() {
       expect(find.text('Add Dates'), findsOneWidget);
 
       // Simulate date picker input:
-      viewModel.dateRange = DateTimeRange(
-        start: DateTime(2024, 6, 12),
-        end: DateTime(2024, 7, 23),
+      await tester.runAsync(
+        () async =>
+            processor.dateRange = DateTimeRange(
+              start: DateTime(2024, 6, 12),
+              end: DateTime(2024, 7, 23),
+            ),
       );
       await tester.pumpAndSettle();
 
@@ -55,9 +59,12 @@ void main() {
       expect(find.text('Add Dates'), findsOneWidget);
 
       // Simulate date picker input:
-      viewModel.dateRange = DateTimeRange(
-        start: DateTime(2024, 6, 12),
-        end: DateTime(2024, 6, 23),
+      await tester.runAsync(
+        () async =>
+            processor.dateRange = DateTimeRange(
+              start: DateTime(2024, 6, 12),
+              end: DateTime(2024, 6, 23),
+            ),
       );
       await tester.pumpAndSettle();
 
